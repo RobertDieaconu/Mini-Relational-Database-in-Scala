@@ -1,16 +1,16 @@
-# Mini Relational Database in Scala
+# Mini Bază de Date Relațională în Scala
 
-A lightweight, functional in-memory relational database implemented in Scala 3. The project models core database concepts — tables, filters, queries, and a database container — using immutable data structures and a composable filter DSL.
+O bază de date relațională in-memory, ușoară și funcțională, implementată în Scala 3. Proiectul modelează concepte de bază ale bazelor de date — tabele, filtre, interogări și un container de bază de date — folosind structuri de date imuabile și un DSL de filtrare compozabil.
 
-## Project Structure
+## Structura Proiectului
 
 ```
 src/
 ├── main/scala/
-│   ├── Table.scala       # Table data structure and operations
-│   ├── FilterCond.scala  # Filter condition DSL
-│   ├── Database.scala    # Database container and management
-│   └── Queries.scala     # Predefined query examples
+│   ├── Table.scala       # Structura de date a tabelului și operații
+│   ├── FilterCond.scala  # DSL pentru condiții de filtrare
+│   ├── Database.scala    # Containerul bazei de date și managementul acesteia
+│   └── Queries.scala     # Exemple de interogări predefinite
 └── test/scala/
     ├── TestTable.scala
     ├── TestFilter.scala
@@ -19,92 +19,92 @@ src/
     └── Utils.scala
 ```
 
-## Core Components
+## Componente Principale
 
 ### `Table`
 
-Represents a named database table as a list of rows (`Map[String, String]`).
+Reprezintă un tabel de bază de date cu nume, ca o listă de rânduri (`Map[String, String]`).
 
-| Method | Description |
+| Metodă | Descriere |
 |---|---|
-| `header` | Returns the list of column names |
-| `data` | Returns all rows |
-| `toString` | Serializes the table to CSV format |
-| `insert(row)` | Inserts or replaces a row (matched by `id`) |
-| `delete(row)` | Removes a matching row |
-| `sort(column, ascending)` | Sorts rows by a column |
-| `select(columns)` | Projects specific columns |
-| `cartesianProduct(other)` | Computes the cartesian product of two tables |
-| `filter(f)` | Filters rows using a `FilterCond` |
-| `update(f, updates)` | Updates fields on rows matching a condition |
-| `apply(index)` | Row access by index |
+| `header` | Returnează lista numelor de coloane |
+| `data` | Returnează toate rândurile |
+| `toString` | Serializează tabelul în format CSV |
+| `insert(row)` | Inserează sau înlocuiește un rând (identificat după `id`) |
+| `delete(row)` | Elimină un rând corespunzător |
+| `sort(column, ascending)` | Sortează rândurile după o coloană |
+| `select(columns)` | Proiectează coloane specifice |
+| `cartesianProduct(other)` | Calculează produsul cartezian a două tabele |
+| `filter(f)` | Filtrează rândurile folosind un `FilterCond` |
+| `update(f, updates)` | Actualizează câmpurile rândurilor ce corespund unei condiții |
+| `apply(index)` | Accesul la rând după index |
 
-**Companion object:**
-- `Table.fromCSV(csv)` — parses a CSV string (first line as header, first field as table name)
-- `Table(name, csv)` — creates a named table from a CSV string
+**Obiect companion:**
+- `Table.fromCSV(csv)` — parsează un șir CSV (primul rând ca header, primul câmp ca nume de tabel)
+- `Table(name, csv)` — creează un tabel cu nume dintr-un șir CSV
 
 ### `FilterCond`
 
-A composable DSL for building filter predicates over rows.
+Un DSL compozabil pentru construirea predicatelor de filtrare pe rânduri.
 
 ```scala
-// Primitive
+// Primitiv
 Field("age", _.toInt > 18)
 
-// Logical operators
-cond1 && cond2   // AND
-cond1 || cond2   // OR
-!cond            // NOT
-cond1 === cond2  // EQUAL (both must evaluate to the same Boolean)
+// Operatori logici
+cond1 && cond2   // ȘI
+cond1 || cond2   // SAU
+!cond            // NEGAȚIE
+cond1 === cond2  // EGAL (ambii trebuie să evalueze la același Boolean)
 
-// Multi-condition
-Any(List(cond1, cond2, cond3))  // at least one is true
-All(List(cond1, cond2, cond3))  // all are true
+// Condiții multiple
+Any(List(cond1, cond2, cond3))  // cel puțin una este adevărată
+All(List(cond1, cond2, cond3))  // toate sunt adevărate
 ```
 
-All conditions evaluate to `Option[Boolean]` — returning `None` if a referenced column does not exist in the row.
+Toate condițiile evaluează la `Option[Boolean]` — returnând `None` dacă o coloană referită nu există în rând.
 
 ### `Database`
 
-A collection of `Table` objects.
+O colecție de obiecte `Table`.
 
-| Method | Description |
+| Metodă | Descriere |
 |---|---|
-| `insert(tableName)` | Adds a new empty table (no-op if already exists) |
-| `update(tableName, newTable)` | Replaces an existing table |
-| `delete(tableName)` | Removes a table by name |
-| `selectTables(names)` | Returns `Some(Database)` with only the named tables, or `None` if any is missing |
-| `apply(index)` | Table access by index |
+| `insert(tableName)` | Adaugă un tabel nou gol (fără efect dacă există deja) |
+| `update(tableName, newTable)` | Înlocuiește un tabel existent |
+| `delete(tableName)` | Elimină un tabel după nume |
+| `selectTables(names)` | Returnează `Some(Database)` doar cu tabelele specificate, sau `None` dacă vreunul lipsește |
+| `apply(index)` | Accesul la tabel după index |
 
 ### `Queries`
 
-Example queries demonstrating how to compose `Database` and `Table` operations:
+Exemple de interogări care demonstrează cum se compun operațiile `Database` și `Table`:
 
-| Query | Description |
+| Interogare | Descriere |
 |---|---|
-| `query_1(db, ageLimit, cities)` | Customers older than `ageLimit` located in any of the given `cities`, sorted by `id` |
-| `query_2(db, date, employeeID)` | Orders after `date` not handled by `employeeID`, projected to `order_id` and `cost`, sorted by descending cost |
-| `query_3(db, minCost)` | Orders with cost above `minCost`, projected to `order_id`, `employee_id`, and `cost`, sorted by `employee_id` |
+| `query_1(db, ageLimit, cities)` | Clienți mai vârstnici de `ageLimit` localizați în oricare dintre `cities`, sortați după `id` |
+| `query_2(db, date, employeeID)` | Comenzi după `date` care nu sunt gestionate de `employeeID`, proiectate pe `order_id` și `cost`, sortate descrescător după cost |
+| `query_3(db, minCost)` | Comenzi cu costul peste `minCost`, proiectate pe `order_id`, `employee_id` și `cost`, sortate după `employee_id` |
 
-## Tech Stack
+## Tehnologii Utilizate
 
-- **Language:** Scala 3.3.1
-- **Build tool:** sbt
-- **Testing:** ScalaTest 3.2.18
+- **Limbaj:** Scala 3.3.1
+- **Instrument de build:** sbt
+- **Testare:** ScalaTest 3.2.18
 
-## Running
+## Rulare
 
-**Run all tests:**
+**Rulează toate testele:**
 ```bash
 sbt test
 ```
 
-**Start a Scala REPL with the project on the classpath:**
+**Pornește un REPL Scala cu proiectul pe classpath:**
 ```bash
 sbt console
 ```
 
-## Type Aliases
+## Aliasuri de Tipuri
 
 ```scala
 type Row     = Map[String, String]
