@@ -1,4 +1,4 @@
-# Mini Bază de Date Relațională în Scala
+# Mini Relational Database in Scala
 
 O bază de date relațională in-memory, ușoară și funcțională, implementată în Scala 3. Proiectul modelează concepte de bază ale bazelor de date — tabele, filtre, interogări și un container de bază de date — folosind structuri de date imuabile și un DSL de filtrare compozabil.
 
